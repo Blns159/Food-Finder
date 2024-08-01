@@ -1,32 +1,32 @@
 const CategoryListData=[
     {
         id:1,
-        name:'Indian',
-        value:'Indian restaurant',
+        name:'Bún',
+        value:'Quán bún',
         icon:'/masala-dosa.png'
     },
     {
         id:2,
-        name:'Mexican',
-        value:'Mexican restaurant',
+        name:'Mì',
+        value:'Quán mì',
         icon:'/taco.png'
     },
     {
         id:3,
-        name:'Italian',
-        value:'Italian restaurant',
+        name:'Cháo',
+        value:'Quán cháo',
         icon:'/ramen.png'
     },
     {
         id:4,
-        name:'Chinese',
-        value:'Chinese restaurant',
+        name:'Bánh',
+        value:'Quán bánh mì',
         icon:'/pizza.png'
     },
     {
         id:4,
-        name:'Japanese',
-        value:'japanese restaurant',
+        name:'Phở',
+        value:'Quán phở',
         icon:'/bento.png'
     },
  
