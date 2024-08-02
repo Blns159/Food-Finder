@@ -1,70 +1,115 @@
 "use client"
 import { useContext, useEffect, useState } from 'react';
+import { calculateDistance } from '@/utils/calculateDist';
 import BusinessList from '@/components/Home/BusinessList';
 import OSMMapView from '@/components/Home/OSMMapView';
 import SkeltonLoading from '@/components/SkeltonLoading';
 import { UserLocationContext } from '@/context/UserLocationContext';
 import { signOut, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import fetchPlacesMapbox from '@/utils/fetchPlacesMapbox';
+import RangeSelect from '@/components/Home/RangeSelect';
+import SelectRating from '@/components/Home/SelectRating';
 
 export default function Home() {
   const { data: session } = useSession();
-  const [radius, setRadius] = useState(1000); // Bán kính tìm kiếm
+  const [radius, setRadius] = useState(10000); // Bán kính tìm kiếm
+  const [category, setCategory] = useState('Bun mam');
   const [businessList, setBusinessList] = useState([]);
   const [businessListOrg, setBusinessListOrg] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [coordinates, setCoordinates] = useState({ latitude: null, longitude: null });
   const router = useRouter();
   const { userLocation, setUserLocation } = useContext(UserLocationContext);
 
+
+  // Push Login....
   useEffect(() => {
     if (!session?.user) {
       router.push('/Login');
     }
   }, [session]);
 
+  // _________ VỊ TRÍ HIỆN TẠI __________
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
-        console.log(`TAU Ở ĐÂY NÈ: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
-        setCoordinates({ latitude: latitude.toFixed(4), longitude: 105.7827 });
+        const roundedLatitude = Math.round(latitude * 10000000) / 10000000;
+        const roundedLongitude = Math.round(longitude * 10000000) / 10000000;
+        console.log(`Vị trí hiện tại:${roundedLatitude}, ${roundedLongitude}`);
+        setUserLocation({ lat: roundedLatitude, lng: roundedLongitude });
       },
       (error) => {
         console.error("Error getting current location", error);
       }
     );
-  }, []);
+  }, [setUserLocation]);
+  // ___________________________________
+
+
+  // __________ LỌC QUÁN ĂN ____________
 
   useEffect(() => {
-    const { latitude, longitude } = coordinates;
-    if (latitude && longitude) {
-      fetchPlaces(latitude, longitude);
-    }
-  }, [coordinates]);
+    fetchData();
+  }, [category, radius, userLocation]);
 
-  const fetchPlaces = async (lat, lng) => {
-    setLoading(true);
-    try {
-      const places = await fetchPlacesMapbox('bún', 105.7830, 21.0408, radius);
-      console.log(places);
-      // setBusinessList(places);
-      // setBusinessListOrg(places);
-      setLoading(false);
-    } catch (error) {
-      console.error('Error fetching places:', error);
-      setLoading(false);
+  const fetchData = () => {
+    if (category) {
+      setLoading(true);
+
+      fetch('data.json')
+        .then(response => response.json())
+        .then(data => {
+          const filteredData = data.locations.filter(location => {
+            const distance = calculateDistance(
+              location.lat,
+              location.lng,
+              userLocation.lat,
+              userLocation.lng
+            );
+            return location.label === category && distance <= radius / 1000;
+          });
+
+          setBusinessList(filteredData);
+          setBusinessListOrg(filteredData);
+          setLoading(false);
+        })
+        .catch(error => {
+          console.error('Error loading JSON:', error);
+          setLoading(false);
+        });
     }
   };
+  // console.log(businessList);
+  // __________________________________
+
+  // _____________LỌC SAO______________
+  // Hàm giới hạn đánh giá
+  const onRatingChange = (rating) => {
+    if (rating.length == 0) {
+      setBusinessList(businessListOrg);
+    }
+    const result = businessList.filter(item => {
+      for (let i = 0; i < rating.length; i++) {
+        if (item.score >= rating[i]) {
+          return true;
+
+        }
+        return false
+      }
+    })
+
+    console.log(result)
+  }
+  // __________________________________
 
   return (
     <div className='grid grid-cols-1 md:grid-cols-4 '>
       <div className='p-3'>
       </div>
+      {/* BẢN ĐỒ */}
       <div className='col-span-3'>
         <OSMMapView businessList={businessList} />
-        <div className='md:absolute mx-2 w-[90%] md:w-[74%] bottom-36 relative md:bottom-3'>
+        <div className='md:absolute mx-2 w-[90%] md:w-[74%] bottom-36 relative md:bottom-3 z-20'>
           {!loading ? <BusinessList businessList={businessList} />
             :
             <div className='flex gap-3'>

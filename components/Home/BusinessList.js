@@ -27,7 +27,7 @@ function BusinessList({ businessList }) {
       </svg>
       <div className='flex overflow-scroll overflow-x-auto gap-4
       scrollbar-hide scroll-smooth' ref={elementRef}>
-        {businessList.map((item, index) => index <= 7 && (
+        {businessList.map((item, index) => index <= 10 && (
           <div key={index} onClick={() => setSelectedBusiness(item)}>
             <BusinessItem business={item} />
           </div>

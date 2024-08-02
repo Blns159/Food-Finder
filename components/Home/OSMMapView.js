@@ -9,35 +9,40 @@ const OSMMapView = ({ businessList }) => {
   const mapRef = useRef();
 
   useEffect(() => {
-    if (mapRef.current && userLocation) {
+    if (mapRef.current && userLocation && userLocation.lat && userLocation.lng) {
       mapRef.current.setView([userLocation.lat, userLocation.lng], 13);
     }
   }, [userLocation]);
 
   const userIcon = new L.Icon({
-    iconUrl: 'https://leafletjs.com/examples/custom-icons/leaf-red.png',
-    iconSize: [38, 38],
+    iconUrl: '/user.png',
+    iconSize: [38, 50],
   });
 
   const businessIcon = new L.Icon({
-    iconUrl: 'https://leafletjs.com/examples/custom-icons/leaf-green.png',
-    iconSize: [38, 38],
+    iconUrl: '/business.png',
+    iconSize: [20, 30],
   });
 
   return (
-    <MapContainer center={[userLocation.lat, userLocation.lng]} zoom={13} ref={mapRef} style={{ height: '100vh', width: '100%' }}>
+    <MapContainer
+      center={userLocation && userLocation.lat && userLocation.lng ? [userLocation.lat, userLocation.lng] : [0, 0]}
+      zoom={13}
+      ref={mapRef}
+      style={{ height: '70vh', width: '100%' }}
+    >
       <TileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       />
-      {userLocation && (
+      {userLocation && userLocation.lat && userLocation.lng && (
         <Marker position={[userLocation.lat, userLocation.lng]} icon={userIcon}>
-          <Popup>Your location</Popup>
+          <Popup>VỊ TRÍ HIỆN TẠI</Popup>
         </Marker>
       )}
       {businessList.map((business, index) => (
         <Marker key={index} position={[business.lat, business.lng]} icon={businessIcon}>
-          <Popup>{business.name}</Popup>
+          <Popup>{business.title}</Popup>
         </Marker>
       ))}
     </MapContainer>

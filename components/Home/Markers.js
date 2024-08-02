@@ -1,36 +1,36 @@
-import { MarkerF, OverlayView } from '@react-google-maps/api'
-import React, { useContext } from 'react'
-import BusinessItem from './BusinessItem'
-import { SelectedBusinessContext } from '@/context/SelectedBusinessContext'
+import React, { useContext } from 'react';
+import { Marker, Popup } from 'react-leaflet';
+import BusinessItem from './BusinessItem';
+import { SelectedBusinessContext } from '@/context/SelectedBusinessContext';
+import L from 'leaflet';
 
-function Markers({business}) {
-    const {selectedBusiness,setSelectedBusiness}=useContext(SelectedBusinessContext)
+function Markers({ business }) {
+  const { selectedBusiness, setSelectedBusiness } = useContext(SelectedBusinessContext);
+
+  const businessIcon = new L.Icon({
+    iconUrl: '/circle.png',
+    iconSize: [10, 10],
+  });
+
   return (
-    <div>
-        <MarkerF
-                position={business.geometry.location}
-                onClick={()=>setSelectedBusiness(business)}
-                icon={{
-                  url:'/circle.png',
-                  scaledSize:{
-                    width:10,
-                    height:10
-                  }
-                }}
-                
-        >
-         {selectedBusiness.reference==business.reference?   
-         <OverlayView
-            position={business.geometry.location}
-            mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
-            >
-            <div className='ml-[-90px] mt-[-230px]'>
-                <BusinessItem business={business} showDir={true} />
-            </div>
-            </OverlayView>:null}
-            </MarkerF>
-    </div>
-  )
+    <Marker
+      position={[business.lat, business.lng]}
+      icon={businessIcon}
+      eventHandlers={{
+        click: () => {
+          setSelectedBusiness(business);
+        },
+      }}
+    >
+      {selectedBusiness && selectedBusiness.placeId === business.placeId && (
+        <Popup>
+          <div className='popup-content'>
+            <BusinessItem business={business} showDir={true} />
+          </div>
+        </Popup>
+      )}
+    </Marker>
+  );
 }
 
-export default Markers
+export default Markers;
